@@ -1,0 +1,74 @@
+from gpiozero import RGBLED, Button
+import random
+import time
+
+LED = RGBLED(red=17, green=18, blue=27, active_high=True)
+BUTTON = Button(22)
+RED = (1, 0, 0)
+GREEN = (0, 1, 0)
+BLUE = (0, 0, 1)
+OFF = (1, 1, 1)
+WHEN_GREEN = time.ctime(1)
+BUTTON_HAS_BEEN_PRESSED = False
+
+def destroy():
+    global LED, BUTTON
+    LED.close()
+    BUTTON.close()
+
+def set_color(color):
+    LED.color=(1-color[0], 1-color[1], 1-color[2])
+    
+def flashSuccess():
+    global LED, WHEN_GREEN, GREEN, OFF
+    for i in range(0, 5):
+        LED.color = OFF
+        time.sleep(.25)
+        LED.color = (1-GREEN[0], 1-GREEN[1], 1-GREEN[2])
+        time.sleep(.25)
+        
+    destroy()
+
+def flashFailure():
+    global LED, RED, OFF
+    print("Dum Dum")
+    for i in range(0, 5):
+        LED.color = OFF
+        time.sleep(.25)
+        LED.color = (1-RED[0], 1-RED[1], 1-RED[2])
+        time.sleep(.25)
+        
+    
+    destroy()
+    
+def flipBool():
+    global BUTTON_HAS_BEEN_PRESSED
+    print("Button pressed")
+    BUTTON_HAS_BEEN_PRESSED = not BUTTON_HAS_BEEN_PRESSED
+    
+def cycle():
+    global LED, BUTTON, RED, GREEN, BLUE, WHEN_GREEN, BUTTON_HAS_BEEN_PRESSED
+    colors = (RED, GREEN, BLUE)
+    while True:
+        if not BUTTON_HAS_BEEN_PRESSED:
+            color_showing = random.choice(colors)
+            set_color(color_showing)
+        BUTTON.when_pressed = flipBool
+        
+        if(color_showing == GREEN):
+            if(BUTTON_HAS_BEEN_PRESSED):
+                flashSuccess()
+        else:
+            if(BUTTON_HAS_BEEN_PRESSED):
+                flashFailure()
+        time.sleep(.5)
+            
+            
+if __name__ == "__main__":
+    print("Program is starting...")
+    try:
+        cycle()
+    except:
+        destroy()
+            
+            

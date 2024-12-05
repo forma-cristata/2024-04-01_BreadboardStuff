@@ -1,0 +1,51 @@
+from gpiozero import Button
+import webbrowser
+import psutil
+import os
+from signal import pause
+import subprocess
+
+BUTTON = Button(18)
+BUTTON_DOS = Button(17)
+firefox_pid = 0
+chrome_pid = 0
+
+
+def toggleFirefox():
+    global BUTTON, BUTTON_DOS, firefox_pid
+    l = [p.info for p in psutil.process_iter(attrs=['pid', 'name']) if 'firefox' in p.info['name']]
+    
+    if(len(l) == 0):
+        print("Firefox is not running\nOpening now.")
+        firefox_pid = subprocess.Popen(["firefox"])
+    else:
+        print("Firefox is running\nClosing now.")
+        firefox_pid.terminate()
+    
+def toggleChrome():
+    global BUTTON, BUTTON_DOS, chrome_pid
+    l = [p.info for p in psutil.process_iter(attrs=['pid', 'name']) if 'chromium-browser' in p.info['name']]
+    if(len(l) == 0):
+        print("Chrome is not running\nOpening now.")
+        
+        chrome_pid = subprocess.Popen(['chromium-browser'])
+    else:
+        print("Chrome is running\nClosing now.")
+        chrome_pid.terminate()
+
+
+def destroy():
+    global BUTTON, BUTTON_DOS
+    BUTTON.close()
+    BUTTON_DOS.close()
+    
+    
+if __name__ == '__main__':
+    print('Program is starting...')
+    try:
+        while True:
+            BUTTON.when_pressed = toggleFirefox
+            BUTTON_DOS.when_pressed = toggleChrome
+            pause()
+    except KeyboardInterrupt:
+        destroy()
